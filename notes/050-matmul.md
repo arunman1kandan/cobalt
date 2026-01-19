@@ -5,6 +5,21 @@
 Implement 2D matrix multiplication with shape signature:
 [A, B] x [B, C] -> [A, C]
 
+**Visual Representation:**
+```
+     [ B x C ]
+      +-----+
+      |     |
+      |  B  |
+[ A x B ] |     |
++-------+ +-----+
+|   A   | |  C  |
++-------+ +-----+
+    =
+   [ A x C ]
+```
+
+
 This operation is foundational for modern deep learning and numerical computing. It underpins:
 - Dense layers / Linear(x)
 - Self-attention mechanisms

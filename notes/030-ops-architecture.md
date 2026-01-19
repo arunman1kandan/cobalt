@@ -1,4 +1,19 @@
-# Ops Architecture
+# Operations Architecture
+
+## Overview
+Operations (Ops) are the verbs of the framework. They take Tensors as input and produce Tensors as output.
+
+## The Dispatch System
+Cobalt uses **Dynamic Runtime Dispatch** to handle different datatypes (`FP32`, `INT32`, etc.).
+
+1. **Frontend (User API):** The user calls `tensor.add(&other)`. The `Tensor` struct is untyped (holds raw bytes).
+2. **Dispatcher (`ops` layer):** The function checks `self.dtype`.
+    - If `FP32`, it routes to `backend::cpu::add::add::<f32>`.
+    - If `INT32`, it routes to `backend::cpu::add::add::<i32>`.
+3. **Backend (Kernel):** The specific implementation (e.g., AVX2 optimized) is executed using concrete Rust types.
+
+This allows us to maintain a clean Python-like API while getting C-like performance where it counts.
+
 
 ## Purpose
 Define how mathematical operations are structured within the framework,

@@ -1,24 +1,11 @@
 use crate::tensor::Tensor;
+use crate::dtype::DType;
+use crate::errors::FrameworkError;
+use crate::backend::cpu::*;
 
-// ================================================================
-// Activation Ops
-//
-// Phase 0:
-// - ReLU
-//
-// Phase 1:
-// - GELU
-// - Sigmoid
-// - Tanh
-// - LeakyReLU
-// ================================================================
-
-pub fn relu(a: &Tensor) -> Tensor {
-    let data = a
-        .data
-        .iter()
-        .map(|x| if *x > 0.0 { *x } else { 0.0 })
-        .collect::<Vec<f32>>();
-
-    Tensor::new(data, a.shape.clone())
+/// Applies the Rectified Linear Unit (ReLU) activation function.
+///
+/// `f(x) = max(0, x)`
+pub fn relu(a: &Tensor) -> Result<Tensor, FrameworkError> {
+    unimplemented!("migrating to backend SIMD")
 }

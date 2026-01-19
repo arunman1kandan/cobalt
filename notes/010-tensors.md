@@ -42,6 +42,20 @@ A 2D tensor with shape [3, 4] is stored as:
 [ 12 contiguous values ]
 ```
 
+### Memory Layout (Row-Major)
+Cobalt uses **Row-Major** layout (C-style), consistent with PyTorch and NumPy.
+
+For a 2D tensor of shape `[Rows, Cols]`:
+- Elements of the same row are stored next to each other.
+- Moving to the next row means jumping over `Cols` elements.
+
+**Index Calculation:**
+For index `[i, j]` (row `i`, column `j`):
+`flat_index = i * Cols + j`
+
+This enables efficient cache usage when iterating over rows.
+
+
 ## Shape Representation
 `Vec<usize>` was chosen due to:
 - dynamic flexibility

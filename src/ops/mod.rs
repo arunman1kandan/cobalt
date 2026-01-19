@@ -1,5 +1,7 @@
-/// This file contains ergonomic wrappers around operations defined in the `ops` module.
-/// These methods are implemented on the `Tensor` struct and forward calls to the corresponding
+/// Operations module.
+///
+/// This module exposes the high-level API for tensor operations.
+/// It delegates the actual computation to the architecture-specific backend (e.g., `backend::cpu`).
 
 pub mod elementwise;
 pub mod matmul;

@@ -10,6 +10,19 @@ Build a small deep learning framework in Rust from scratch, including:
 - Training loops
 - Future backend support (CUDA)
 
+### Architecture Overview
+
+```mermaid
+graph TD
+    User["User API (main.rs)"] --> Tensor
+    Tensor --> Core["Core Logic (tensor.rs)"]
+    Core --> Ops["Operations (ops/*.rs)"]
+    Ops --> Dispatch["Backend Dispatch"]
+    Dispatch --> CPU["CPU Backend (Scalar + AVX)"]
+    Dispatch --> GPU["GPU Backend (Future)"]
+```
+
+
 ## Starting Position
 This project is intentionally handcrafted for educational depth.
 No external ML frameworks will be used initially.
