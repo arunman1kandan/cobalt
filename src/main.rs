@@ -23,6 +23,8 @@ fn main() {
     demo_broadcasting();
     demo_matrix_operations();
     demo_activations();
+    demo_views_and_slicing();
+    demo_extensive_example();
     demo_performance_benchmark();
     
     let total_time = total_start.elapsed();
@@ -40,6 +42,7 @@ fn print_header() {
     println!("   ✅ Matrix Multiplication (2D)");
     println!("   ✅ Activations (ReLU, Softmax)");
     println!("   ✅ Broadcasting (NumPy-compatible)");
+    println!("   ✅ Views & Slicing (Zero-copy metadata)");
     println!("   ✅ SIMD Optimization (AVX2/AVX512 for FP32)");
     println!("{}\n", "=".repeat(80));
 }
@@ -259,9 +262,9 @@ fn demo_uint_operations() {
         Err(e) => println!("  ✗ UINT8 Add failed: {:?}", e),
     }
     
-    // UINT16
-    let a16 = Tensor::from_slice(&[1000u16, 2000], vec![2]);
-    let b16 = Tensor::from_slice(&[500u16, 500], vec![2]);
+    // UINT16 (avoid overflow in debug builds)
+    let a16 = Tensor::from_slice(&[100u16, 200], vec![2]);
+    let b16 = Tensor::from_slice(&[2u16, 3], vec![2]);
     
     match a16.mul(&b16) {
         Ok(c) => println!("  ✓ UINT16 Mul: {:?}", c.as_slice::<u16>()),
@@ -407,6 +410,109 @@ fn demo_activations() {
     println!("  ⏱️  Time: {:?}\n", elapsed);
 }
 
+fn demo_views_and_slicing() {
+    println!("🔹 Views & Slicing (Phase 1)");
+    println!("{}", "-".repeat(80));
+
+    let start = Instant::now();
+
+    let t = Tensor::from_f32(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], vec![2, 3]);
+    println!("  Base Tensor Shape: {:?}", t.shape);
+    println!("  Base Data: {:?}", t.as_f32_slice());
+
+    match t.slice(0, 1) {
+        Ok(v) => println!("  ✓ Slice [0..1] Shape: {:?}, Strides: {:?}", v.shape(), v.strides()),
+        Err(e) => println!("  ✗ Slice failed: {:?}", e),
+    }
+
+    match t.transpose_view(0, 1) {
+        Ok(v) => {
+            println!("  ✓ Transpose Shape: {:?}, Strides: {:?}", v.shape(), v.strides());
+            let materialized = v.contiguous();
+            println!("    ↳ Materialized Data: {:?}", materialized.as_f32_slice());
+        },
+        Err(e) => println!("  ✗ Transpose failed: {:?}", e),
+    }
+
+    match t.reshape_view(&[3, 2]) {
+        Ok(v) => println!("  ✓ Reshape [3,2] Shape: {:?}", v.shape()),
+        Err(e) => println!("  ✗ Reshape failed: {:?}", e),
+    }
+
+    match t.flatten_view() {
+        Ok(v) => println!("  ✓ Flatten Shape: {:?}", v.shape()),
+        Err(e) => println!("  ✗ Flatten failed: {:?}", e),
+    }
+
+    let elapsed = start.elapsed();
+    println!("  ⏱️  Time: {:?}\n", elapsed);
+}
+
+fn demo_extensive_example() {
+    println!("🔹 Extensive End-to-End Example");
+    println!("{}", "-".repeat(80));
+
+    let start = Instant::now();
+
+    // Step 1: Build a base tensor
+    let a = Tensor::from_f32(vec![
+        1.0, 2.0, 3.0,
+        4.0, 5.0, 6.0,
+    ], vec![2, 3]);
+    println!("  Base A shape: {:?}", a.shape);
+    println!("  Base A data:  {:?}", a.as_f32_slice());
+
+    // Step 2: Slice and transpose (views)
+    let a_slice = a.slice(0, 2).unwrap();
+    let a_t = a_slice.transpose(0, 1).unwrap();
+    println!("  View A^T shape: {:?}, strides: {:?}", a_t.shape(), a_t.strides());
+
+    // Step 3: Materialize view for matmul
+    let a_t_mat = a_t.contiguous();
+    println!("  A^T materialized: {:?}", a_t_mat.as_f32_slice());
+
+    // Step 4: Matmul with another tensor
+    let b = Tensor::from_f32(vec![
+        1.0, 0.0,
+        0.0, 1.0,
+    ], vec![2, 2]);
+    println!("  B shape: {:?}", b.shape);
+
+    let c = match a_t_mat.matmul(&b) {
+        Ok(out) => out,
+        Err(e) => {
+            println!("  ✗ MatMul failed: {:?}", e);
+            return;
+        }
+    };
+    println!("  MatMul result shape: {:?}", c.shape);
+    println!("  MatMul result data:  {:?}", c.as_f32_slice());
+
+    // Step 5: Add a broadcasted bias
+    let bias = Tensor::from_f32(vec![1.0, -1.0], vec![1, 2]);
+    let c_bias = match c.add(&bias) {
+        Ok(out) => out,
+        Err(e) => {
+            println!("  ✗ Add(bias) failed: {:?}", e);
+            return;
+        }
+    };
+    println!("  + Bias data:        {:?}", c_bias.as_f32_slice());
+
+    // Step 6: Activation
+    let c_relu = match c_bias.relu() {
+        Ok(out) => out,
+        Err(e) => {
+            println!("  ✗ ReLU failed: {:?}", e);
+            return;
+        }
+    };
+    println!("  ReLU output:        {:?}", c_relu.as_f32_slice());
+
+    let elapsed = start.elapsed();
+    println!("  ⏱️  Time: {:?}\n", elapsed);
+}
+
 fn demo_performance_benchmark() {
     println!("🔹 Performance Benchmarks");
     println!("{}", "-".repeat(80));
@@ -457,8 +563,7 @@ fn print_footer(total_time: std::time::Duration) {
     println!("   • Broadcasting fully functional");
     println!("   • SIMD optimizations active for FP32");
     
-    println!("\n🚀 Next Steps (Phase 1):");
-    println!("   → Views and Slicing (transpose, reshape)");
+    println!("\n🚀 Next Steps (Phase 1.5):");
     println!("   → Reduction Operations (sum, mean, max, min)");
     println!("   → Optimized MatMul (tiling/blocking)");
     println!("   → More Activations (GELU, Sigmoid, Tanh)");

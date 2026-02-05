@@ -10,6 +10,7 @@ pub mod backend;
 pub mod ops;
 pub mod errors;
 pub mod broadcast;
+pub mod views;
 
 #[cfg(test)]
 mod tests;
@@ -19,3 +20,4 @@ pub use tensor::Tensor;
 pub use dtype::DType;
 pub use device::Device;
 pub use errors::FrameworkError;
+pub use views::TensorView;

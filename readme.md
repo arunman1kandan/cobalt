@@ -14,19 +14,20 @@ This is not intended as a production framework — it is a learning engine and e
 - Experiment with performance (SIMD, parallel, GPU)
 - Build systems intuition beyond high-level APIs
 
-## Current Features (Phase 0) ✅ COMPLETE
+## Current Features (Phase 0-1) ✅ COMPLETE
 
 - **Tensor Core**: Multi-dimensional arrays with type-erased storage
-- **Data Types**: FP32, FP64, INT32, INT64, UINT8, INT8, BOOL support
+- **Data Types**: 16 dtypes (FP32/64/16/BF16, INT/UINT 8/16/32/64, BOOL)
 - **Elementwise Ops**: Add, Mul with full broadcasting
 - **Matrix Operations**: MatMul (2D, naive O(n³))
 - **Activations**: ReLU, Softmax (numerically stable)
 - **Broadcasting**: NumPy-compatible with zero-copy stride manipulation
+- **Views & Slicing**: Transpose, reshape, flatten, squeeze/unsqueeze, contiguous materialization
 - **SIMD**: AVX2/AVX512 optimization for FP32 operations
 - **Testing**: 32 comprehensive tests (100% passing)
 - **Documentation**: Extensive notes under `/notes`
 
-**Status**: All Phase 0 goals achieved with zero compiler warnings and full test coverage.
+**Status**: Phase 0 and Phase 1 (views/slicing) complete with full test coverage.
 
 ## Roadmap
 
@@ -41,9 +42,11 @@ This is not intended as a production framework — it is a learning engine and e
 - ✅ SIMD optimization (AVX2/AVX512)
 - ✅ Documentation-first development
 
-### Phase 1 (next)
+### Phase 1 (complete)
 
-- Views and slicing (transpose, reshape, indexing)
+- ✅ Views and slicing (transpose, reshape, flatten, indexing helpers)
+
+### Phase 1.5 (next)
 - Reduction operations (sum, mean, max, min)
 - Batched matmul
 - Optimized tiled/blocked matmul
@@ -96,13 +99,17 @@ cobalt/
 
 ```rust
 use cobalt::Tensor;
-// Note: This is the target API design - implementation in progress
 
 fn main() {
-    let a = Tensor::new(vec![1.0, 2.0, 3.0], vec![3]);
-    let b = Tensor::new(vec![4.0, 5.0, 6.0], vec![3]);
-    let c = a.add(&b);
-    println!("{:?}", c);
+    let a = Tensor::from_f32(vec![1.0, 2.0, 3.0, 4.0], vec![2, 2]);
+    let b = Tensor::from_f32(vec![5.0, 6.0, 7.0, 8.0], vec![2, 2]);
+
+    let c = a.add(&b).unwrap();
+    println!("Add: {:?}", c.as_f32_slice());
+
+    let v = a.transpose_view(0, 1).unwrap();
+    let v_mat = v.contiguous();
+    println!("View transpose (materialized): {:?}", v_mat.as_f32_slice());
 }
 ```
 

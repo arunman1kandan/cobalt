@@ -1,6 +1,9 @@
 use std::fmt;
+use std::sync::Arc;
 use crate::dtype::DType;
 use crate::device::Device;
+use crate::errors::FrameworkError;
+use crate::views::TensorView;
 
 /// Private trait for types that can be elements of a Tensor.
 /// This connects compile-time Rust types (f32, i32) to runtime DTypes.
@@ -37,7 +40,7 @@ impl Element for half::bf16 { const DTYPE: DType = DType::BF16; }
 #[derive(Clone)]
 pub struct Tensor {
     /// Raw memory buffer. Layout is typically row-major (C-contiguous).
-    pub data: Vec<u8>,     // raw byte buffer
+    pub data: Arc<Vec<u8>>,     // raw byte buffer (shared for views)
     pub shape: Vec<usize>,
     pub dtype: DType,
     pub device: Device,
@@ -48,7 +51,7 @@ impl Tensor {
         let numel: usize = shape.iter().product();
         let bytes = numel * dtype.size_in_bytes();
         Self {
-            data: vec![0u8; bytes],
+            data: Arc::new(vec![0u8; bytes]),
             shape,
             dtype,
             device,
@@ -80,7 +83,7 @@ impl Tensor {
         }
 
         Self {
-            data: bytes,
+            data: Arc::new(bytes),
             shape,
             dtype: T::DTYPE,
             device: Device::CPU,
@@ -107,7 +110,7 @@ impl Tensor {
     /// to ensure type safety.
     pub fn as_slice<T: Element>(&self) -> &[T] {
         assert!(self.dtype == T::DTYPE, "dtype mismatch");
-        let ptr = self.data.as_ptr() as *const T;
+        let ptr = self.data.as_ref().as_ptr() as *const T;
         let len = self.numel();
         unsafe { std::slice::from_raw_parts(ptr, len) }
     }
@@ -115,7 +118,9 @@ impl Tensor {
     /// View the tensor data as a mutable typed slice.
     pub fn as_slice_mut<T: Element>(&mut self) -> &mut [T] {
         assert!(self.dtype == T::DTYPE, "dtype mismatch");
-        let ptr = self.data.as_mut_ptr() as *mut T;
+        let data = Arc::get_mut(&mut self.data)
+            .expect("cannot get mutable slice from shared tensor storage");
+        let ptr = data.as_mut_ptr() as *mut T;
         let len = self.numel();
         unsafe { std::slice::from_raw_parts_mut(ptr, len) }
     }
@@ -126,6 +131,36 @@ impl Tensor {
 
     pub fn as_f32_slice_mut(&mut self) -> &mut [f32] {
         self.as_slice_mut::<f32>()
+    }
+
+    // ====================== View Helpers ======================
+
+    pub fn view(&self) -> Result<TensorView, FrameworkError> {
+        TensorView::from_tensor(self)
+    }
+
+    pub fn slice(&self, start: usize, end: usize) -> Result<TensorView, FrameworkError> {
+        self.view()?.slice(start, end)
+    }
+
+    pub fn slice_dim(&self, dim: usize, start: usize, end: usize) -> Result<TensorView, FrameworkError> {
+        self.view()?.slice_dim(dim, start, end)
+    }
+
+    pub fn transpose_view(&self, dim1: usize, dim2: usize) -> Result<TensorView, FrameworkError> {
+        self.view()?.transpose(dim1, dim2)
+    }
+
+    pub fn permute_view(&self, axes: &[usize]) -> Result<TensorView, FrameworkError> {
+        self.view()?.permute(axes)
+    }
+
+    pub fn reshape_view(&self, new_shape: &[usize]) -> Result<TensorView, FrameworkError> {
+        self.view()?.reshape(new_shape)
+    }
+
+    pub fn flatten_view(&self) -> Result<TensorView, FrameworkError> {
+        self.view()?.flatten()
     }
 }
 

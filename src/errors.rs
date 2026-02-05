@@ -18,6 +18,12 @@ pub enum FrameworkError {
     UnsupportedOp(&'static str),
     /// Unsupported data type for the operation.
     UnsupportedDType(String),
+        /// Index out of bounds for slicing.
+        IndexOutOfBounds { index: usize, length: usize },
+        /// Invalid dimension index for reshaping or transposing.
+        InvalidDimension { dim: usize, rank: usize },
+        /// Duplicate axis in permutation.
+        DuplicateAxis { axis: usize },
 }
 
 impl fmt::Display for FrameworkError {
@@ -35,6 +41,12 @@ impl fmt::Display for FrameworkError {
                 write!(f, "Unsupported op: {}", op),
             FrameworkError::UnsupportedDType(msg) =>
                 write!(f, "Unsupported DType: {}", msg),
+                FrameworkError::IndexOutOfBounds { index, length } =>
+                    write!(f, "Index {} out of bounds for length {}", index, length),
+                FrameworkError::InvalidDimension { dim, rank } =>
+                    write!(f, "Dimension {} invalid for rank {}", dim, rank),
+                FrameworkError::DuplicateAxis { axis } =>
+                    write!(f, "Duplicate axis {} in permutation", axis),
         }
     }
 }
