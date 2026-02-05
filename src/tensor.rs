@@ -1,7 +1,6 @@
 use std::fmt;
 use crate::dtype::DType;
 use crate::device::Device;
-use std::mem;
 
 /// Private trait for types that can be elements of a Tensor.
 /// This connects compile-time Rust types (f32, i32) to runtime DTypes.
@@ -9,13 +8,22 @@ pub trait Element: Copy + Clone + 'static + std::fmt::Debug + PartialEq {
     const DTYPE: DType;
 }
 
+// Standard Rust types
 impl Element for f32 { const DTYPE: DType = DType::FP32; }
 impl Element for f64 { const DTYPE: DType = DType::FP64; }
+impl Element for i8 { const DTYPE: DType = DType::INT8; }
+impl Element for i16 { const DTYPE: DType = DType::INT16; }
 impl Element for i32 { const DTYPE: DType = DType::INT32; }
 impl Element for i64 { const DTYPE: DType = DType::INT64; }
 impl Element for u8 { const DTYPE: DType = DType::UINT8; }
-impl Element for i8 { const DTYPE: DType = DType::INT8; }
+impl Element for u16 { const DTYPE: DType = DType::UINT16; }
+impl Element for u32 { const DTYPE: DType = DType::UINT32; }
+impl Element for u64 { const DTYPE: DType = DType::UINT64; }
 impl Element for bool { const DTYPE: DType = DType::BOOL; }
+
+// Half-precision types
+impl Element for half::f16 { const DTYPE: DType = DType::FP16; }
+impl Element for half::bf16 { const DTYPE: DType = DType::BF16; }
 
 /// A multi-dimensional array containing elements of a single data type.
 ///
