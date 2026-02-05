@@ -1,6 +1,16 @@
 [package]
 name = "cobalt"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+[lib]
+name = "cobalt"
+path = "src/lib.rs"
+
+[[bin]]
+name = "cobalt"
+path = "src/main.rs"
 
 [dependencies]
+num-traits = "0.2"
+half = "2.3"
