@@ -1,6 +1,5 @@
 /// CPU ISA detection utilities for x86_64 architecture
 /// Still experimental and may be expanded in the future
-use std::arch::x86_64::*;
 
 /// Checks if the CPU supports AVX2 (Advanced Vector Extensions 2).
 /// Includes 256-bit SIMD registers.

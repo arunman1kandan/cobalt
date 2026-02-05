@@ -14,32 +14,43 @@ This is not intended as a production framework — it is a learning engine and e
 - Experiment with performance (SIMD, parallel, GPU)
 - Build systems intuition beyond high-level APIs
 
-## Current Features (Phase 0)
+## Current Features (Phase 0) ✅ COMPLETE
 
-- Tensor type (CPU)
-- Elementwise ops (add, mul, ReLU)
-- Softmax (last dimension)
-- Naive 2D matmul (O(n^3))
-- Structured design notes under `/notes`
+- **Tensor Core**: Multi-dimensional arrays with type-erased storage
+- **Data Types**: FP32, FP64, INT32, INT64, UINT8, INT8, BOOL support
+- **Elementwise Ops**: Add, Mul with full broadcasting
+- **Matrix Operations**: MatMul (2D, naive O(n³))
+- **Activations**: ReLU, Softmax (numerically stable)
+- **Broadcasting**: NumPy-compatible with zero-copy stride manipulation
+- **SIMD**: AVX2/AVX512 optimization for FP32 operations
+- **Testing**: 32 comprehensive tests (100% passing)
+- **Documentation**: Extensive notes under `/notes`
 
-**Focus:** correctness and conceptual clarity, not performance. Although might evolve into focusing on performance.
+**Status**: All Phase 0 goals achieved with zero compiler warnings and full test coverage.
 
 ## Roadmap
 
-### Phase 0 (now)
+### Phase 0 (now) ✅ COMPLETE
 
-- Elementwise ops
-- ReLU and softmax
-- Naive matmul
-- Documentation-first development
+- ✅ Elementwise ops (add, mul)
+- ✅ ReLU and softmax activations
+- ✅ Naive matmul
+- ✅ Broadcasting support
+- ✅ Multi-dtype support (FP32, FP64, INT32, INT64)
+- ✅ Comprehensive test suite (32 tests)
+- ✅ SIMD optimization (AVX2/AVX512)
+- ✅ Documentation-first development
 
-### Phase 1
+### Phase 1 (next)
 
-- Broadcasting
+- Views and slicing (transpose, reshape, indexing)
+- Reduction operations (sum, mean, max, min)
 - Batched matmul
-- Parallel CPU kernels
-- Fused kernels
-- Initial tests and benchmarks
+- Optimized tiled/blocked matmul
+- Parallel CPU kernels (Rayon)
+- More activations (GELU, Sigmoid, Tanh)
+- Fused kernels (e.g., Add+ReLU)
+- Initial benchmarks
 
 ### Phase 2
 

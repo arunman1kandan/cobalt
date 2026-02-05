@@ -6,8 +6,8 @@ use std::fmt;
 /// including shape mismatches, type errors, and device conflicts.
 #[derive(Debug)]
 pub enum FrameworkError {
-    /// Dimension mismatch during binary operations (e.g., trying to add [2, 3] and [4, 5]).
-    ShapeMismatch { a: Vec<usize>, b: Vec<usize> },
+    /// Shape mismatch during operations.
+    ShapeMismatch { expected: String, got: String },
     /// Failure to broadcast shapes according to NumPy rules.
     BroadcastMismatch { a: Vec<usize>, b: Vec<usize> },
     /// Operation attempted on tensors with different dtypes (e.g., FP32 + INT32).
@@ -16,13 +16,15 @@ pub enum FrameworkError {
     DeviceMismatch,
     /// The requested operation is not supported for the current configuration.
     UnsupportedOp(&'static str),
+    /// Unsupported data type for the operation.
+    UnsupportedDType(String),
 }
 
 impl fmt::Display for FrameworkError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            FrameworkError::ShapeMismatch { a, b } =>
-                write!(f, "Shape mismatch: {:?} vs {:?}", a, b),
+            FrameworkError::ShapeMismatch { expected, got } =>
+                write!(f, "Shape mismatch: expected {}, got {}", expected, got),
             FrameworkError::BroadcastMismatch { a, b } =>
                 write!(f, "Broadcast mismatch: {:?} vs {:?}", a, b),
             FrameworkError::DTypeMismatch =>
@@ -31,6 +33,8 @@ impl fmt::Display for FrameworkError {
                 write!(f, "Device mismatch"),
             FrameworkError::UnsupportedOp(op) =>
                 write!(f, "Unsupported op: {}", op),
+            FrameworkError::UnsupportedDType(msg) =>
+                write!(f, "Unsupported DType: {}", msg),
         }
     }
 }

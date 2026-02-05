@@ -7,3 +7,7 @@ pub mod add_scalar;
 pub mod add_avx2;
 pub mod add_avx512;
 pub mod add;
+pub mod mul;
+pub mod matmul;
+pub mod relu;
+pub mod softmax;

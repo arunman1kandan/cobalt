@@ -1,9 +1,5 @@
 use crate::tensor::Tensor;
-use crate::dtype::DType;
-use crate::device::Device;
 use crate::errors::FrameworkError;
-use crate::broadcast::broadcast_shapes;
-use crate::backend::cpu::*;
 
 // ========================================================================
 // elementwise ADD with broadcasting + dtype/device/error handling
@@ -24,5 +20,5 @@ pub fn add(a: &Tensor, b: &Tensor) -> Result<Tensor, FrameworkError> {
 
 /// Performs elementwise multiplication with broadcasting.
 pub fn mul(a: &Tensor, b: &Tensor) -> Result<Tensor, FrameworkError> {
-    unimplemented!("migrating to backend SIMD")
+    crate::backend::cpu::mul::mul(a, b)
 }
